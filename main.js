@@ -11,7 +11,7 @@ const isInDarkMode = false;
 
 // Global state variables
 let wordList = [];         // Array of word objects.
-                           // Each word object: { word, weight, timesShown, timesRemembered, lastShownStep, dueCount, dueDeadline }
+// Each word object: { word, weight, timesShown, timesRemembered, lastShownStep, dueCount, dueDeadline }
 let currentStep = 0;       // Global counter of how many cards have been shown.
 let currentWord = null;    // The currently displayed word.
 
@@ -403,6 +403,26 @@ function loadWordsHandler() {
 }
 
 /* =============================
+   Clear Stats Function
+============================= */
+/**
+ * Clears statistics for the current word list while preserving the words.
+ */
+function clearStats() {
+    wordList.forEach(word => {
+        word.timesShown = 0;
+        word.timesRemembered = 0;
+        word.lastShownStep = 0;
+        word.dueCount = 0;
+        word.dueDeadline = 0;
+    });
+    currentStep = 0;
+    updateHistogram();
+    autoSaveState();
+    showToast("Stats cleared for current word list.");
+}
+
+/* =============================
    Answer Processing Functions
 ============================= */
 /**
@@ -471,6 +491,7 @@ document.getElementById('saveProfile').addEventListener('click', saveProfile);
 document.getElementById('loadProfile').addEventListener('click', loadProfile);
 document.getElementById('deleteProfile').addEventListener('click', deleteProfile);
 document.getElementById('renameProfile').addEventListener('click', renameProfile);
+document.getElementById('clearStats').addEventListener('click', clearStats);
 document.getElementById('saveKeyBindings').addEventListener('click', saveKeyBindings);
 document.getElementById('toggleSidebar').addEventListener('click', function() {
     const sidebar = document.getElementById('sidebar');
