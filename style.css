@@ -16,4 +16,18 @@ body {
 }
 .card {
     min-height: 200px;
+    transition: background-color 0.3s ease;
+}
+
+#restoreSidebar {
+    display: none;
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translate(0%, -50%);
+    background: #ddd;
+    border: 1px solid #aaa;
+    padding: 5px 10px;
+    cursor: pointer;
+    z-index: 1000;
 }
