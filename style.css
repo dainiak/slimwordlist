@@ -1,0 +1,19 @@
+body {
+    overflow: hidden;
+}
+#sidebar {
+    min-width: 250px;
+    max-width: 250px;
+    background: #f8f9fa;
+    padding: 15px;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+}
+#main {
+    padding: 30px;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+.card {
+    min-height: 200px;
+}
