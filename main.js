@@ -423,6 +423,90 @@ function clearStats() {
 }
 
 /* =============================
+   Export/Import Functions
+============================= */
+/**
+ * Exports the currently selected (or current) profile as a JSON file.
+ */
+function exportProfile() {
+    // Try to export the profile selected in the dropdown,
+    // otherwise export the current state.
+    const profileSelect = document.getElementById('profileSelect');
+    let profileName = profileSelect.value;
+    let profileData;
+    if (profileName) {
+        const profiles = JSON.parse(localStorage.getItem('profiles') || '{}');
+        profileData = profiles[profileName];
+        if (!profileData) {
+            alert("Profile not found for export.");
+            return;
+        }
+        profileData.profileName = profileName;
+    } else {
+        profileData = {
+            profileName: "CurrentProfile",
+            version: STORAGE_VERSION,
+            wordList,
+            currentStep
+        };
+    }
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profileData, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", (profileData.profileName || "profile") + ".json");
+    document.body.appendChild(downloadAnchorNode); // Required for Firefox.
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+}
+
+/**
+ * Handles a dropped JSON file to import a profile.
+ */
+function handleFileDrop(e) {
+    e.preventDefault();
+    if (e.dataTransfer.items) {
+        for (let i = 0; i < e.dataTransfer.items.length; i++) {
+            if (e.dataTransfer.items[i].kind === 'file') {
+                let file = e.dataTransfer.items[i].getAsFile();
+                if (file.type === "application/json" || file.name.endsWith(".json")) {
+                    let reader = new FileReader();
+                    reader.onload = function(event) {
+                        try {
+                            const importedProfile = JSON.parse(event.target.result);
+                            // Validate the imported profile.
+                            if (!importedProfile.version || !importedProfile.wordList || importedProfile.currentStep === undefined) {
+                                alert("Invalid profile format.");
+                                return;
+                            }
+                            let profileName = importedProfile.profileName || prompt("Enter a name for the imported profile:", "ImportedProfile");
+                            if (!profileName) {
+                                alert("Profile import cancelled: no name provided.");
+                                return;
+                            }
+                            const profiles = JSON.parse(localStorage.getItem('profiles') || '{}');
+                            if (profiles[profileName]) {
+                                if (!confirm("A profile with this name already exists. Overwrite?")) {
+                                    return;
+                                }
+                            }
+                            profiles[profileName] = importedProfile;
+                            localStorage.setItem('profiles', JSON.stringify(profiles));
+                            updateProfileSelect();
+                            showToast(`Profile "${profileName}" imported successfully.`);
+                        } catch (err) {
+                            alert("Error parsing JSON: " + err);
+                        }
+                    }
+                    reader.readAsText(file);
+                } else {
+                    alert("Please drop a valid JSON file.");
+                }
+            }
+        }
+    }
+}
+
+/* =============================
    Answer Processing Functions
 ============================= */
 /**
@@ -492,6 +576,7 @@ document.getElementById('loadProfile').addEventListener('click', loadProfile);
 document.getElementById('deleteProfile').addEventListener('click', deleteProfile);
 document.getElementById('renameProfile').addEventListener('click', renameProfile);
 document.getElementById('clearStats').addEventListener('click', clearStats);
+document.getElementById('exportProfile').addEventListener('click', exportProfile);
 document.getElementById('saveKeyBindings').addEventListener('click', saveKeyBindings);
 document.getElementById('toggleSidebar').addEventListener('click', function() {
     const sidebar = document.getElementById('sidebar');
@@ -513,6 +598,15 @@ document.getElementById('restoreSidebar').addEventListener('click', function() {
     sidebar.style.display = 'block';
     this.style.display = 'none';
     document.getElementById('toggleSidebar').innerText = 'Hide Sidebar';
+});
+
+// Add global event listeners for drag & drop (for importing profiles).
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+});
+document.addEventListener('drop', function(e) {
+    e.preventDefault();
+    handleFileDrop(e);
 });
 
 document.addEventListener('keydown', handleKeyPress);
