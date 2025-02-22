@@ -210,12 +210,14 @@ function updateHistogram() {
     });
 
     const spec = {
-        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+        $schema: "https://vega.github.io/schema/vega-lite/v5.20.1.json",
         description: "Histogram of correct and incorrect answers",
+        title: "Histogram of correct answers",
         data: { values: chartData },
-        width: 400,
+        width: "container",
         height: 300,
-        mark: "bar",
+        config: {view: {continuousWidth: 300, continuousHeight: 300}},
+        mark: {type: "bar"},
         encoding: {
             x: {
                 field: "word",
